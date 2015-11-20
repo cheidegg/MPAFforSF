@@ -1,0 +1,165 @@
+{
+  if(Recompute) {
+    MPAFDisplay md;
+ 
+    //Bloody René Brun
+    bool * rtmp= const_cast<bool*> pr;
+    *rtmp = false;
+
+  }
+  else md.refresh();
+
+
+  //general parameters ********************* general parameters
+  string dir="phys14exerc";
+  string fileName="templateSSDL_phys14"; //was treeName in LUNE susy_cut_lowpt
+  //  string fileList="susy_SIGNALREGION_LEPPT_LEPID_JETPT"; //CH: since AnaConfig needs a fileName to open, we need to put the data files into a different variable
+  string fileList="phys14exerc_Jan26"; //CH: since AnaConfig needs a fileName to open, we need to put the data files into a different variable
+  string hName="";
+  
+  bool mcOnly = true;
+  
+  //if(md.isInitStatus()) {
+  md.anConf.configureNames( dir, fileName, fileList, hName );
+  md.anConf.configureData(false, 0, mcOnly);
+  //}
+  
+  //observables **********************
+  //string obs[6]={"","","","","",""};
+  md.dp.setObservables("SR_HT");
+  
+  //Binning & title ************************* Binning & titre
+  string yTitle="number of events";
+  int binning=30;
+  int addBinBkg=1; //BinB = binning*AddBin
+  double rangeY[2]={0,0};
+  double rangeX[2]={80.,1500.};
+  int xDiv[3]={6,6,0};
+  int yDiv[3]={6,6,0}; //Nlabel /  sous-Div /ssdiv
+  bool logYScale=false;
+  bool overFlowBin=true;
+  bool underFlowBin=false;
+  bool showDMCRatio=true;
+  bool showGrid=false;
+  float markerSize=0.8;
+  float lineWidth=2;
+
+  bool summedSignal=false;
+  bool stacking=true;
+
+  bool cmsPrel=true;
+
+  float xt=0.68;
+  float yt=0.48;
+  float st=0.039;
+  string addText="";
+
+  //Systematic uncertainties ********************************
+  bool addSystematics=true;
+  
+  bool mcStatSyst=true;
+  string systSources="";
+
+  bool uncDet=false;
+
+  string Norm="";
+  
+  //Lumis( or XSections ) pb-1 & KFactors ************************************
+  float lumi=4000; //pb-1 19470
+  float energy=13; //TeV
+
+  bool useXS=false;
+
+  map<string,float> LumisXS;
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  ///         XSECTION / NGEN  (PHYS14 samples) 
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  LumisXS[ "DYJetsToLLM50_skim" ]        = 2829164 / 4746.; 
+  LumisXS[ "DYJetsM50_HT100to200_skim" ] = 4054159 / 194.3;
+  LumisXS[ "DYJetsM50_HT200to400_skim" ] = 4666496 / 52.24;
+  LumisXS[ "DYJetsM50_HT400to600_skim" ] = 4931372 / 6.546;
+  LumisXS[ "DYJetsM50_HT600toInf_skim" ] = 4493574 / 2.179;
+  
+  LumisXS[ "WJetsToLNu_HT100to200_skim" ] = 5262265 / 1817.;
+  LumisXS[ "WJetsToLNu_HT200to400_skim" ] = 4936077 / 4671.6;
+  LumisXS[ "WJetsToLNu_HT400to600_skim" ] = 4640594 / 55.61;
+  
+  LumisXS[ "TTJets_skim"]              = 25446993 / 827.1;
+  LumisXS[ "TBar_tWch_skim" ]	       = 986100 / 35.6;
+  LumisXS[ "T_tWch_skim" ]	       = 971800 / 35.6;
+  
+  LumisXS[ "TTWJets_skim" ]            = 246521 / 1.152;
+  LumisXS[ "TTZJets_skim" ]            = 249275 / 2.232;
+  LumisXS[ "WZJetsTo3LNu_skim" ]       = 237484 / 1.634;
+  LumisXS[ "ZZTo4L_skim" ]             = 1958600 / 1.218;
+  
+  LumisXS[ "SMS_T1tttt_2J_mGl1200_mLSP800_skim"] = 100322 / (0.0856418 *10) ;
+  LumisXS[ "SMS_T1tttt_2J_mGl1500_mLSP100_skim"] = 105679 / (0.0141903 *10) ;
+
+//  LumisXS[ "T5Full_1200_1000_800_skim"] =       121497 / (0.0856418 *40);
+//  LumisXS[ "T5Full_1500_800_100_skim"] =       127139 / (0.0141903 *40) ;
+  
+
+ 
+
+  //via XSect
+  
+  map<string,float> KFactors;
+     // if( md.isInitStatus() )
+  md.anConf.configureLumi( LumisXS, KFactors, lumi, useXS );
+//  md.anConf.addSample( "TTJets_skim",             "T#bar{t}",    kBlue+1 );
+//  md.anConf.addSample( "TBar_tWch_skim",          "single top",    kAzure+6 );
+//  md.anConf.addSample( "T_tWch_skim",             "single top",    kAzure+6 );
+//
+//  md.anConf.addSample( "WJetsToLNu_HT100to200_skim",             "W+jets",    kAzure-2 );
+//  md.anConf.addSample( "WJetsToLNu_HT200to400_skim",             "W+jets",    kAzure-2 );
+//  md.anConf.addSample( "WJetsToLNu_HT400to600_skim",             "W+jets",    kAzure-2 );
+
+//   md.anConf.addSample( "WJetsToLNu_HT600toInf_skim",             "fake",    kAzure-2 );
+//  md.anConf.addSample( "DYJetsM50_HT100to200_skimfake",             "fake",    kAzure+6 );
+//  md.anConf.addSample( "DYJetsM50_HT200to400_skimfake",             "fake",    kAzure+6 );
+//  md.anConf.addSample( "DYJetsM50_HT400to600_skimfake",             "fake",    kAzure+6 );
+//  md.anConf.addSample( "DYJetsM50_HT600toInf_skimfake",             "fake",    kAzure+6 );
+
+  //md.anConf.addSample( "TTJets_MSDecaysCKM_central_skim",       "t#bar{t} misId",    kRed+1 );
+//  md.anConf.addSample( "DYJetsM50_HT100to200_skim",             "Z+jets",    kRed-6 );
+//  md.anConf.addSample( "DYJetsM50_HT200to400_skim",             "Z+jets",    kRed-6 );
+//  md.anConf.addSample( "DYJetsM50_HT400to600_skim",             "Z+jets",    kRed-6 );
+//  md.anConf.addSample( "DYJetsM50_HT600toInf_skim",             "Z+jets",    kRed-6 );
+//
+//  md.anConf.addSample( "ZZTo4L_skim"                                      ,  "Rare"             , kOrange-2 );
+//  md.anConf.addSample( "WZJetsTo3LNu_S14_skim"                            ,  "Rare"             , kOrange-2 );
+  md.anConf.addSample( "TTWJets_skim"                                     ,  "TTW"             , kOrange-2 );
+  md.anConf.addSample( "TTZJets_skim"                                     ,  "TTZ"             , kAzure-2 );
+
+  md.anConf.addSample( "SMS_T1tttt_2J_mGl1200_mLSP800_skim"  ,    "T1tttt(HL)*10 sig", kViolet-3  );
+  md.anConf.addSample( "SMS_T1tttt_2J_mGl1500_mLSP100_skim"  ,    "T1tttt(HM)*10 sig", kGreen+2  );
+  
+  //===============================================================
+
+ //*********************************************************************²
+ //Execution macro ******************************************************
+ 
+ //Configuration ================
+  //if( md.isInitStatus() ) {
+  
+   //md.anConf.configureLumi( LumisXS, KFactors, lumi, useXS );
+   
+   // }
+
+  //plotting ================
+  md.dp.setLumiAndEnergy( lumi, energy );
+  md.dp.setNormalization( Norm );
+  md.dp.configureDisplay(yTitle, rangeY, rangeX, logYScale, xDiv,
+			 yDiv, binning, addBinBkg, overFlowBin,
+			 underFlowBin, showDMCRatio, showGrid, 
+			 stacking, addSystematics, mcStatSyst,
+			 markerSize, lineWidth,summedSignal, 
+			 mcOnly,cmsPrel, uncDet);
+  
+  md.doPlot();
+  //  md.doStatisticsPlot();
+  md.savePlot("phys14");
+  // md.dp.addText(xt,yt,st,addText);
+}
