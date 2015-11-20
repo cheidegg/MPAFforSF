@@ -20,6 +20,7 @@ SSDL2015::initialize(){
   //  fillEvents();
 
   readCSCevents();
+  readEESCevents();
 
   // trigger lines
   string TR_lines_non_ee[1] = {"HLT_BIT_HLT_DoubleEle8_CaloIdM_TrackIdM_Mass8_PFHT300_v"  };
