@@ -611,13 +611,28 @@ SSDL2015::advancedSelection(int WF) {
   if(!passHLTbit()) return;
   counter("HLT");
 
-  //HLT Scale factors ===================
-  _susyMod -> applyHLTSF(_hltBit, _weight);
 
-  //Scale factors =======================
-  _susyMod->applySingleLepSF(_l1Cand, _weight);
-  _susyMod->applySingleLepSF(_l2Cand, _weight);
-  // ====================================
+  // Giuseppe's lepton SFs ===============
+  //_weight *= _susyMod -> GCeventScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(), 
+  //                                          _l1Cand->pt   (), _l2Cand->pt   (),
+  //                                          _l1Cand->eta  (), _l2Cand->eta  (), _HT); 
+  _weight *= _susyMod -> GCleptonScaleFactor(_l1Cand->pdgId(), _l1Cand->pt(), _l1Cand->eta(), _HT);
+  _weight *= _susyMod -> GCleptonScaleFactor(_l2Cand->pdgId(), _l2Cand->pt(), _l2Cand->eta(), _HT); 
+
+
+  // Laurent's fast sim SF and Giuseppe's full sim SF
+  _weight *= _susyMod -> LTFastSimTriggerEfficiency(_HT, _l1Cand->pt(), _l1Cand->pdgId(), 
+                                                         _l2Cand->pt(), _l2Cand->pdgId());
+
+  _weight *= _susyMod -> GCtriggerScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(), _l1Cand->pt(), _l2Cand->pt(), _HT);
+
+  ////HLT Scale factors ===================
+  //_susyMod -> applyHLTSF(_hltBit, _weight);
+
+  ////Scale factors =======================
+  //_susyMod->applySingleLepSF(_l1Cand, _weight);
+  //_susyMod->applySingleLepSF(_l2Cand, _weight);
+  //// ====================================
 
 
 

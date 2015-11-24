@@ -108,6 +108,14 @@ public:
   float bTagScaleFactor(unsigned int op, unsigned int mt, int st, unsigned int fl);
   float bTagPt(float);
 
+  float GCtriggerScaleFactor(int pdgId1, int pdgId2, float pt1, float pt2, float ht);
+  float GCelectronScaleFactorHighHT(float pt, float eta);
+  float GCelectronScaleFactorLowHT(float pt, float eta);
+  float GCmuonScaleFactor(float pt, float eta);
+  float GCleptonScaleFactor(int pdgId, float pt, float eta, float ht);
+  float GCeventScaleFactor(int pdgId1, int pdgId2, float pt1, float pt2, float eta1, float eta2, float ht);
+  double LTFastSimTriggerEfficiency(double HT, double l1_Pt, int l1_pdgId, double l2_Pt, int l2_pdgId);
+
   enum {kDenom=0,
 	kVLoose,
 	kLoose,
