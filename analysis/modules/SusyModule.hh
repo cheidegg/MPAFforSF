@@ -103,8 +103,8 @@ public:
 
   float bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
                CandList& bJets, vector<unsigned int>& bJetIdx, int st);
-  float bTagMediumEfficiency(Candidate* jet, int jetIdx, bool isBTagged);
-  float bTagMediumScaleFactor(Candidate* jet, int jetIdx, bool isBTagged, int st);
+  float bTagMediumEfficiency(Candidate* jet, int jetIdx, unsigned int flavor);
+  float bTagMediumScaleFactor(Candidate* jet, int jetIdx, unsigned int flavor, int st);
   float bTagScaleFactor(unsigned int op, unsigned int mt, int st, unsigned int fl);
   float bTagPt(float);
 

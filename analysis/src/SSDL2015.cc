@@ -123,6 +123,7 @@ SSDL2015::initialize(){
   _vc->registerVar("Jet_phi"                      );
   _vc->registerVar("Jet_mass"                     );
   _vc->registerVar("Jet_btagCSV"                  );
+  _vc->registerVar("Jet_mcFlavour"                );
 
   _vc->registerVar("Jet_CorrFactor_L1"            );
   _vc->registerVar("Jet_CorrFactor_L1L2L3Res"     );
@@ -334,7 +335,8 @@ SSDL2015::initialize(){
   _dbm -> loadDb("hltSF"      , "hltSF.db"                                           ); 
   _dbm -> loadDb("BTagSF"     , "BTagSFMedium.db"                                    ); 
   _dbm -> loadDb("BTagEffUSDG", "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_udsg");
-  _dbm -> loadDb("BTagEffCB"  , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_b"   );
+  _dbm -> loadDb("BTagEffC"   , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_c"   );
+  _dbm -> loadDb("BTagEffB"   , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_b"   );
 
   _dbm -> loadDb("FastSimElSF", "sf_el_tight_IDEmu_ISOEMu_ra5.root", "histo3D");
   _dbm -> loadDb("FastSimMuSF", "sf_mu_mediumID_multi.root"        , "histo3D");

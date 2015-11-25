@@ -853,7 +853,7 @@ SusyModule::applySingleLepSF(const Candidate* cand, float& weight) {
 
   switch(std::abs(cand->pdgId())) {
   case 11: {weight *= _dbm->getDBValue("eleSFDb", std::abs(cand->eta()), cand->pt() ); break;}
-  case 13: {weight *= _dbm->getDBValue("muSFDb", std::abs(cand->eta()), cand->pt() ); break;}
+  case 13: {weight *= _dbm->getDBValue("muSFDb" , std::abs(cand->eta()), cand->pt() ); break;}
   case 15: {weight *= _dbm->getDBValue("tauSFDb", std::abs(cand->eta()), cand->pt() ); break;}
   }
 
@@ -886,20 +886,34 @@ SusyModule::bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
   float pdata = 1.0;
   float pmc   = 1.0;
 
-  // light jets
   for(unsigned int i = 0; i < jets.size(); ++i) {
-    if(find(bJetIdx.begin(), bJetIdx.end(), jetIdx[i]) == bJetIdx.end()){
-      pdata *= (1 - bTagMediumEfficiency(jets[i], jetIdx[i], false) * 
-		           bTagMediumScaleFactor(jets[i], jetIdx[i], false, st));
-      pmc   *= (1 - bTagMediumEfficiency(jets[i], jetIdx[i], false));
-    }
+ 
+    unsigned int  flavor = 2;
+    if     (_vc->get("Jet_mcFlavour") == 5) flavor = 0; // b jet
+    else if(_vc->get("Jet_mcFlavour") == 4) flavor = 1; // c jet
+
+    pdata *= bTagMediumEfficiency (bJets[i], bJetIdx[i], flavor) * 
+             bTagMediumScaleFactor(bJets[i], bJetIdx[i], flavor, st);
+    pmc   *= bTagMediumEfficiency (bJets[i], bJetIdx[i], flavor);
+
   }
-  // bjets
-  for(unsigned int i = 0; i < bJets.size(); ++i){
-    pdata *= bTagMediumEfficiency (bJets[i], bJetIdx[i], true) * 
-             bTagMediumScaleFactor(bJets[i], bJetIdx[i], true, st);
-    pmc   *= bTagMediumEfficiency (bJets[i], bJetIdx[i], true);
-  }
+
+
+  //// light jets
+  //for(unsigned int i = 0; i < jets.size(); ++i) {
+  //  if(find(bJetIdx.begin(), bJetIdx.end(), jetIdx[i]) == bJetIdx.end()){
+  //    pdata *= (1 - bTagMediumEfficiency(jets[i], jetIdx[i], false) * 
+  //  	           bTagMediumScaleFactor(jets[i], jetIdx[i], false, st));
+  //    pmc   *= (1 - bTagMediumEfficiency(jets[i], jetIdx[i], false));
+  //  }
+  //}
+
+  //// b jets
+  //for(unsigned int i = 0; i < bJets.size(); ++i){
+  //  pdata *= bTagMediumEfficiency (bJets[i], bJetIdx[i], true) * 
+  //           bTagMediumScaleFactor(bJets[i], bJetIdx[i], true, st);
+  //  pmc   *= bTagMediumEfficiency (bJets[i], bJetIdx[i], true);
+  //}
 
   if(pmc != 0) return pdata/pmc;
   return 1.0;
@@ -907,15 +921,29 @@ SusyModule::bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
 }
 
 float
-SusyModule::bTagMediumEfficiency(Candidate* jet, int jetIdx, bool isBTagged){
+SusyModule::bTagMediumEfficiency(Candidate* jet, int jetIdx, unsigned int flavor){
+//SusyModule::bTagMediumEfficiency(Candidate* jet, int jetIdx, bool isBTagged){
 
-  if(isBTagged) 
-    return _dbm->getDBValue("BTagEffCB", bTagPt(jet->pt()), std::abs(jet->eta()));
-  return _dbm->getDBValue("BTagEffUSDG", bTagPt(jet->pt()), std::abs(jet->eta()));
+  // b jet
+  if(flavor == 0)
+    return _dbm->getDBValue("BTagEffB", bTagPt(jet->pt()), std::abs(jet->eta()));
+
+  // c jet
+  else if(flavor == 1)
+    return _dbm->getDBValue("BTagEffC", bTagPt(jet->pt()), std::abs(jet->eta()));
+
+  // light
+  else
+    return _dbm->getDBValue("BTagEffUSDG", bTagPt(jet->pt()), std::abs(jet->eta()));
+
+  //if(isBTagged) 
+  //  return _dbm->getDBValue("BTagEffCB", bTagPt(jet->pt()), std::abs(jet->eta()));
+  //return _dbm->getDBValue("BTagEffUSDG", bTagPt(jet->pt()), std::abs(jet->eta()));
 } 
 
 float
-SusyModule::bTagMediumScaleFactor(Candidate* jet, int jetIdx, bool isBTagged, int st){
+SusyModule::bTagMediumScaleFactor(Candidate* jet, int jetIdx, unsigned int flavor, int st){
+//SusyModule::bTagMediumScaleFactor(Candidate* jet, int jetIdx, bool isBTagged, int st){
 
   //cout<<jet->pt()<<"    "<<jet->eta()<<"   "<<isBTagged<<"  "<<st<<" --> "<<_dbm->getDBValue("BTagSF",(isBTagged?1:2), jet->eta(), jet->pt())<<"   "<<endl;
 
@@ -926,13 +954,12 @@ SusyModule::bTagMediumScaleFactor(Candidate* jet, int jetIdx, bool isBTagged, in
   // else
   //   return _dbm->getTF1DBErrL("BTagSF", jet->pt(), 1, !isBTagged, (isBTagged?1:2), jet->eta(), jet->pt(), 0.5);
 
-  if(st==0){ 
-    return _dbm->getDBValue("BTagSF", (isBTagged?1:2), jet->eta(), bTagPt(jet->pt()));
-  }
+  if(st==0)
+    return _dbm->getDBValue("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
   else if(st==1)
-    return _dbm->getDBErrH("BTagSF",  (isBTagged?1:2), jet->eta(), bTagPt(jet->pt()));
+    return _dbm->getDBErrH ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
   else
-    return _dbm->getDBErrL("BTagSF",  (isBTagged?1:2), jet->eta(), bTagPt(jet->pt()));
+    return _dbm->getDBErrL ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
 
 } 
 
