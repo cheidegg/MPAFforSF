@@ -336,6 +336,11 @@ SSDL2015::initialize(){
   _dbm -> loadDb("BTagEffUSDG", "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_udsg");
   _dbm -> loadDb("BTagEffCB"  , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_b"   );
 
+  _dbm -> loadDb("FastSimElSF", "sf_el_tight_IDEmu_ISOEMu_ra5.root", "histo3D");
+  _dbm -> loadDb("FastSimMuSF", "sf_mu_mediumID_multi.root"        , "histo3D");
+  //_dbm -> loadDb("FullSimElSF", "kinematicBinSFele.root", ""); // not used currently, since we use Giuseppe's functions instead
+
+
  
   int ilhe = (int)atoi(_LHESYS.c_str());
   bool tmp_ismux = ilhe >= 1001 && ilhe <= 1009;
@@ -612,19 +617,22 @@ SSDL2015::advancedSelection(int WF) {
   counter("HLT");
 
 
-  // Giuseppe's lepton SFs ===============
-  //_weight *= _susyMod -> GCeventScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(), 
-  //                                          _l1Cand->pt   (), _l2Cand->pt   (),
-  //                                          _l1Cand->eta  (), _l2Cand->eta  (), _HT); 
-  _weight *= _susyMod -> GCleptonScaleFactor(_l1Cand->pdgId(), _l1Cand->pt(), _l1Cand->eta(), _HT);
-  _weight *= _susyMod -> GCleptonScaleFactor(_l2Cand->pdgId(), _l2Cand->pt(), _l2Cand->eta(), _HT); 
+  // HLT AND LEPTON SFs ======================
+  if(!_isData){
+    _weight *= _susyMod -> GCeventScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(),        // trigger * lep1 SF * lep2 SF 
+                                              _l1Cand->pt   (), _l2Cand->pt   (),      
+                                              _l1Cand->eta  (), _l2Cand->eta  (), _HT);
+    //_weight *= _susyMod -> GCtriggerScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(), _l1Cand->pt(), _l2Cand->pt(), _HT);
+    //_weight *= _susyMod -> GCleptonScaleFactor(_l1Cand->pdgId(), _l1Cand->pt(), _l1Cand->eta(), _HT);
+    //_weight *= _susyMod -> GCleptonScaleFactor(_l2Cand->pdgId(), _l2Cand->pt(), _l2Cand->eta(), _HT); 
 
+    //if(FASTSIM) {
+    _weight *= _susyMod -> LTFastSimTriggerEfficiency(_HT, _l1Cand->pt(), _l1Cand->pdgId(), 
+                                                           _l2Cand->pt(), _l2Cand->pdgId()); // trigger
+    _weight *= _susyMod -> getFastSimLepSF(_l1Cand, _l2Cand, _vc->get("nVert")); // lep1 SF * lep2 SF
+    //}
+  }
 
-  // Laurent's fast sim SF and Giuseppe's full sim SF
-  _weight *= _susyMod -> LTFastSimTriggerEfficiency(_HT, _l1Cand->pt(), _l1Cand->pdgId(), 
-                                                         _l2Cand->pt(), _l2Cand->pdgId());
-
-  _weight *= _susyMod -> GCtriggerScaleFactor(_l1Cand->pdgId(), _l2Cand->pdgId(), _l1Cand->pt(), _l2Cand->pt(), _HT);
 
   ////HLT Scale factors ===================
   //_susyMod -> applyHLTSF(_hltBit, _weight);

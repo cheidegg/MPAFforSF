@@ -859,6 +859,25 @@ SusyModule::applySingleLepSF(const Candidate* cand, float& weight) {
 
 }
 
+
+float
+SusyModule::getFastSimLepSF(Candidate* lep1, Candidate* lep2, int nVert){
+
+  string db1 = "FastSimElSF"; 
+  string db2 = "FastSimElSF";
+  
+  float max1 = 2.49;
+  float max2 = 2.49;
+  
+  if(std::abs(lep1 -> pdgId()) == 13) { db1 = "FastSimMuSF"; max1 = 2.39; }
+  if(std::abs(lep1 -> pdgId()) == 13) { db2 = "FastSimMuSF"; max2 = 2.39; }
+  
+  return _dbm -> getDBValue(db1, std::min(lep1->pt(), (float) 199.9), std::min(std::abs(lep1->eta()), max1), std::min(nVert, 39))
+       * _dbm -> getDBValue(db1, std::min(lep2->pt(), (float) 199.9), std::min(std::abs(lep2->eta()), max2), std::min(nVert, 39));
+       
+}
+
+
 float
 SusyModule::bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
                    CandList& bJets, vector<unsigned int>& bJetIdx, int st){

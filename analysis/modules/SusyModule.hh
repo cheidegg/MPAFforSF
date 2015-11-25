@@ -99,7 +99,7 @@ public:
   void applyHLTSF(const string& hltLine, const vector<Candidate*>& cands, float& weight);
   void applyLepSF(const CandList& cands, float& weight);
   void applySingleLepSF(const Candidate* cand, float& weight);
-
+  float getFastSimLepSF(Candidate* lep1, Candidate* lep2, int nVert);
 
   float bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
                CandList& bJets, vector<unsigned int>& bJetIdx, int st);
