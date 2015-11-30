@@ -8,6 +8,7 @@
 #include "analysis/utils/Debug.cc"
 
 #include "tools/src/DataBaseManager.hh"
+#include "analysis/modules/BTagCalibrationStandalone.hh"
 
 struct InternalCList{
   CandList list;
@@ -136,10 +137,24 @@ public:
 private:
 
   void defineLeptonWPS();
+  void loadBTagReader();
   void loadDBs();
+
   //const
   VarClass* _vc;
   DataBaseManager* _dbm;
+
+  // (string) getenv("MPAF")
+  BTagCalibration* _calib;
+  BTagCalibrationReader* _reader_b_cv;
+  BTagCalibrationReader* _reader_b_up;
+  BTagCalibrationReader* _reader_b_do;
+  BTagCalibrationReader* _reader_c_cv;
+  BTagCalibrationReader* _reader_c_up;
+  BTagCalibrationReader* _reader_c_do;
+  BTagCalibrationReader* _reader_l_cv;
+  BTagCalibrationReader* _reader_l_up;
+  BTagCalibrationReader* _reader_l_do;
 
   vector<float> _cLostHitWP;
   vector<float> _tChWP;

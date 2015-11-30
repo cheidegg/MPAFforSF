@@ -13,12 +13,44 @@ SusyModule::SusyModule(VarClass* vc, DataBaseManager* dbm):
 {
   defineLeptonWPS();
   loadDBs();
+  loadBTagReader();
 }
 
 SusyModule::~SusyModule() {
 
   delete _vc;
 }
+
+
+void
+SusyModule::loadBTagReader(){
+
+
+// setup calibration readers
+  string filename = (string) getenv("MPAF") + "/workdir/database/BTagSF_CSVv2_25ns.csv";
+  _calib = new BTagCalibration("csvv2", "workdir/database/BTagSF_CSVv2_25ns.csv");//filename.c_str());
+  _reader_b_cv = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+  _reader_b_up = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "up"     );
+  _reader_b_do = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down"   );
+  _reader_c_cv = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+  _reader_c_up = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "up"     );
+  _reader_c_do = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down"   );
+  _reader_l_cv = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+  _reader_l_up = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "up"     );
+  _reader_l_do = new BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down"   );
+  _reader_b_cv -> load(*_calib, BTagEntry::FLAV_B   , "mujets");
+  _reader_b_up -> load(*_calib, BTagEntry::FLAV_B   , "mujets");
+  _reader_b_do -> load(*_calib, BTagEntry::FLAV_B   , "mujets");
+  _reader_c_cv -> load(*_calib, BTagEntry::FLAV_C   , "mujets");
+  _reader_c_up -> load(*_calib, BTagEntry::FLAV_C   , "mujets");
+  _reader_c_do -> load(*_calib, BTagEntry::FLAV_C   , "mujets");
+  _reader_l_cv -> load(*_calib, BTagEntry::FLAV_UDSG, "comb"  );
+  _reader_l_up -> load(*_calib, BTagEntry::FLAV_UDSG, "comb"  );
+  _reader_l_do -> load(*_calib, BTagEntry::FLAV_UDSG, "comb"  );
+
+
+}
+
 
 void
 SusyModule::loadDBs() {
@@ -35,13 +67,15 @@ SusyModule::loadDBs() {
   _dbm->loadDb("eleSFDb","electronSF.db");
   _dbm->loadDb("muSFDb","muonSF.db");
   _dbm->loadDb("tauSFDb","tauSF.db");
-
  
-  _dbm->loadDb("BTagEffUSDG", "GC_BTagEffs.root", (string)("h2_BTaggingEff_csv_med_Eff_udsg") );
-  _dbm->loadDb("BTagEffCB", "GC_BTagEffs.root", (string)("h2_BTaggingEff_csv_med_Eff_b")   );
-  cout<<" pouet "<<endl; 
-  _dbm->loadDb("BTagSF", "BTagSFMedium.db");
-  cout<<" pouet "<<endl;
+  _dbm->loadDb("BTagEffUDSG", "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_udsg" );
+  _dbm->loadDb("BTagEffC"   , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_c"    );
+  _dbm->loadDb("BTagEffB"   , "GC_BTagEffs.root", "h2_BTaggingEff_csv_med_Eff_b"    );
+  _dbm->loadDb("BTagSF"     , "BTagSFMedium.db");
+
+ _dbm -> loadDb("FastSimElSF", "sf_el_tight_IDEmu_ISOEMu_ra5.root", "histo3D");
+ _dbm -> loadDb("FastSimMuSF", "sf_mu_mediumID_multi.root"        , "histo3D");
+
 }
 
 void
@@ -879,7 +913,7 @@ SusyModule::getFastSimLepSF(Candidate* lep1, Candidate* lep2, int nVert){
 
 
 float
-SusyModule::bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
+SusyModule::bTagSF(CandList& jets, vector<unsigned int>& jetIdx,
                    CandList& bJets, vector<unsigned int>& bJetIdx, int st){
   // put st = -1 / 0 / +1 for down / central / up
 
@@ -889,13 +923,19 @@ SusyModule::bTagSF(CandList& jets , vector<unsigned int>& jetIdx ,
   for(unsigned int i = 0; i < jets.size(); ++i) {
  
     unsigned int  flavor = 2;
-    if     (_vc->get("Jet_mcFlavour") == 5) flavor = 0; // b jet
-    else if(_vc->get("Jet_mcFlavour") == 4) flavor = 1; // c jet
+    if     (_vc->get("Jet_mcFlavour", jetIdx[i]) == 5) flavor = 0; // b jet
+    else if(_vc->get("Jet_mcFlavour", jetIdx[i]) == 4) flavor = 1; // c jet
 
-    pdata *= bTagMediumEfficiency (bJets[i], bJetIdx[i], flavor) * 
-             bTagMediumScaleFactor(bJets[i], bJetIdx[i], flavor, st);
-    pmc   *= bTagMediumEfficiency (bJets[i], bJetIdx[i], flavor);
-
+    if(find(bJetIdx.begin(), bJetIdx.end(), jetIdx[i]) == bJetIdx.end()){
+      pdata *= bTagMediumEfficiency (jets[i], jetIdx[i], flavor) * 
+               bTagMediumScaleFactor(jets[i], jetIdx[i], flavor, st);
+      pmc   *= bTagMediumEfficiency (jets[i], jetIdx[i], flavor);
+    }
+    else {
+      pdata *= (1 - bTagMediumEfficiency (jets[i], jetIdx[i], flavor) * 
+                    bTagMediumScaleFactor(jets[i], jetIdx[i], flavor, st));
+      pmc   *= (1 - bTagMediumEfficiency (jets[i], jetIdx[i], flavor));
+    }
   }
 
 
@@ -925,16 +965,22 @@ SusyModule::bTagMediumEfficiency(Candidate* jet, int jetIdx, unsigned int flavor
 //SusyModule::bTagMediumEfficiency(Candidate* jet, int jetIdx, bool isBTagged){
 
   // b jet
-  if(flavor == 0)
+  if(flavor == 0){
+//cout << "b efficiency: " << _dbm->getDBValue("BTagEffB", bTagPt(jet->pt()), std::abs(jet->eta())) << endl;
     return _dbm->getDBValue("BTagEffB", bTagPt(jet->pt()), std::abs(jet->eta()));
+  }
 
   // c jet
-  else if(flavor == 1)
+  else if(flavor == 1){
+//cout << "c efficiency: " << _dbm->getDBValue("BTagEffC", bTagPt(jet->pt()), std::abs(jet->eta())) << endl;
     return _dbm->getDBValue("BTagEffC", bTagPt(jet->pt()), std::abs(jet->eta()));
+  }
 
   // light
-  else
-    return _dbm->getDBValue("BTagEffUSDG", bTagPt(jet->pt()), std::abs(jet->eta()));
+  else {
+//cout << "light efficiency: " << _dbm->getDBValue("BTagEffUDSG", bTagPt(jet->pt()), std::abs(jet->eta())) << endl;
+    return _dbm->getDBValue("BTagEffUDSG", bTagPt(jet->pt()), std::abs(jet->eta()));
+  }
 
   //if(isBTagged) 
   //  return _dbm->getDBValue("BTagEffCB", bTagPt(jet->pt()), std::abs(jet->eta()));
@@ -954,12 +1000,44 @@ SusyModule::bTagMediumScaleFactor(Candidate* jet, int jetIdx, unsigned int flavo
   // else
   //   return _dbm->getTF1DBErrL("BTagSF", jet->pt(), 1, !isBTagged, (isBTagged?1:2), jet->eta(), jet->pt(), 0.5);
 
-  if(st==0)
-    return _dbm->getDBValue("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
-  else if(st==1)
-    return _dbm->getDBErrH ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
-  else
-    return _dbm->getDBErrL ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
+  //if(st==0)
+  //  return _dbm->getDBValue("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
+  //else if(st==1)
+  //  return _dbm->getDBErrH ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
+  //else
+  //  return _dbm->getDBErrL ("BTagSF", flavor, jet->eta(), bTagPt(jet->pt()));
+
+  BTagCalibrationReader* reader = nullptr;
+  BTagEntry::JetFlavor fl = BTagEntry::FLAV_UDSG;
+
+  // mujets for b jets
+  if(flavor == 0){
+    fl = BTagEntry::FLAV_B;
+    if     (st == 0) reader = _reader_b_cv;
+    else if(st == 1) reader = _reader_b_up;
+    else             reader = _reader_b_do;
+  }
+  // mujets for c jets
+  else if(flavor == 1){
+    fl = BTagEntry::FLAV_C;
+    if     (st == 0) reader = _reader_c_cv;
+    else if(st == 1) reader = _reader_c_up;
+    else             reader = _reader_c_do;
+  }
+  // comb for light jets
+  else {
+    if     (st == 0) reader = _reader_l_cv;
+    else if(st == 1) reader = _reader_l_up;
+    else             reader = _reader_l_do;
+  }
+ 
+  float sf = reader -> eval(fl, jet -> eta(), bTagPt(jet->pt()));
+  //DUMP(flavor);
+  //DUMP(st);
+  //DUMP(jet -> eta());
+  //DUMP(jet -> pt());
+  //DUMP(sf);
+  return sf;
 
 } 
 

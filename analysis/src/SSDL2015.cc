@@ -356,7 +356,7 @@ SSDL2015::initialize(){
 
 void
 SSDL2015::modifyWeight() {
-
+return;
   if (_vc->get("isData") != 1) {
 
    //generator weights
@@ -697,17 +697,18 @@ SSDL2015::advancedSelection(int WF) {
   // int nbjet = _nBJets;
   // double met = _met->pt();
   // double HT = _HT;
-  // int sr = ((getCurrentWorkflow()<kBR00H_Fake)?(getCurrentWorkflow()-offset):(0)); // CH: offset is BR30L -> we already subtract all workflows before the SR sidebands
-  // //int sr = ((getCurrentWorkflow()<kBR00H_mId)?(getCurrentWorkflow()-offset):(0)); // CH: offset is BR30L -> we already subtract all workflows before the SR sidebands
+  // int sr = getCurrentWorkflow()-offset;
+  // //int sr = ((getCurrentWorkflow()<kBR00H_Fake)?(getCurrentWorkflow()-offset):(0)); // CH: offset is BR30L -> we already subtract all workflows before the SR sidebands
+  //// //int sr = ((getCurrentWorkflow()<kBR00H_mId)?(getCurrentWorkflow()-offset):(0)); // CH: offset is BR30L -> we already subtract all workflows before the SR sidebands
 
-  //// if(getCurrentWorkflow()==kBR00H_Fake || getCurrentWorkflow()==kBR10H_Fake || getCurrentWorkflow()==kBR20H_Fake || getCurrentWorkflow()==kBR30H_Fake) sr=0;
-  //
-  //  //cout << "workflow of the event in question is " << (getCurrentWorkflow()  - offset) << ":" << sr << endl;
-  //  //cout << "auxFlags " << _auxFlags[0] << ": " << kIsFake << endl;
+  ////// if(getCurrentWorkflow()==kBR00H_Fake || getCurrentWorkflow()==kBR10H_Fake || getCurrentWorkflow()==kBR20H_Fake || getCurrentWorkflow()==kBR30H_Fake) sr=0;
+  ////
+  ////  //cout << "workflow of the event in question is " << (getCurrentWorkflow()  - offset) << ":" << sr << endl;
+  ////  //cout << "auxFlags " << _auxFlags[0] << ": " << kIsFake << endl;
 
-  ////if(WF == kGlobal && (getCurrentWorkflow() == kBR00H || getCurrentWorkflow() == kBR10H || getCurrentWorkflow() == kBR20H || getCurrentWorkflow() == kBR30H)){
-  //if(_isFake && sr > 0) {  
-  ////if(_isOS && sr > 0) {
+  //if(WF == kGlobal && (getCurrentWorkflow() == kBR00H || getCurrentWorkflow() == kBR10H || getCurrentWorkflow() == kBR20H || getCurrentWorkflow() == kBR30H)){
+  ////if(_isFake && sr > 0) {  
+  //////if(_isOS && sr > 0) {
   //  cout << Form("%1d %9d %12.0f\t%2d\t%+2d %5.1f\t%+2d %5.1f\t%d\t%2d\t%5.1f\t%6.1f\t%2d\t%2.5f",
   // 	       run, lumi, event, nLep,
   // 	       id1, pt1, id2, pt2,
